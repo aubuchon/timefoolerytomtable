@@ -2,390 +2,965 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TimeFooleryTomTable — Whistler 2026</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>TimeFooleryTomTable</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(180deg, #0b1d3a 0%, #1a3a5c 40%, #e8f4f8 100%);
-      min-height: 100vh;
-      color: #1a1a2e;
+      font-family: 'Poppins', -apple-system, sans-serif;
+      background: linear-gradient(180deg, #0b1d3a 0%, #1a3a5c 40%, #1a3a5c 100%);
+      min-height: 100vh; min-height: 100dvh;
+      color: #fff;
       overflow-x: hidden;
     }
+    button { font-family: inherit; cursor: pointer; border: none; }
+    input { font-family: inherit; }
 
-    /* — Snowfall — */
-    .snowflakes { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
-    .snowflake {
-      position: absolute; top: -20px; color: #fff; font-size: 1.2rem; opacity: 0.7;
-      animation: fall linear infinite;
-    }
-    @keyframes fall {
-      0% { transform: translateY(-20px) rotate(0deg); }
-      100% { transform: translateY(105vh) rotate(360deg); }
-    }
+    /* ── Snowfall ── */
+    .snowflakes { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .snowflake { position: absolute; top: -20px; color: #fff; animation: fall linear infinite; }
+    @keyframes fall { 0%{transform:translateY(-20px) rotate(0)} 100%{transform:translateY(105vh) rotate(360deg)} }
 
-    /* — Header — */
-    .hero {
-      position: relative; z-index: 1;
-      text-align: center; padding: 60px 20px 40px;
-      color: #fff;
-    }
-    .hero h1 {
-      font-size: clamp(1.8rem, 5vw, 3.5rem);
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      text-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      line-height: 1.1;
-    }
-    .hero h1 span { color: #7dd3fc; }
-    .hero .subtitle {
-      font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-      margin-top: 10px;
-      font-weight: 400;
-      opacity: 0.9;
-    }
-    .hero .tagline {
-      margin-top: 16px;
-      font-size: 0.85rem;
-      opacity: 0.7;
-      font-style: italic;
-    }
-    .ski-emoji { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+    /* ── Layout ── */
+    .app { position: relative; z-index: 1; max-width: 500px; margin: 0 auto; padding: 0 16px 100px; }
+    .screen { display: none; }
+    .screen.active { display: block; }
 
-    /* — Main content — */
-    .container {
-      position: relative; z-index: 1;
-      max-width: 700px; margin: 0 auto; padding: 0 16px 60px;
+    /* ── Header ── */
+    .header {
+      text-align: center; padding: 40px 0 20px;
     }
+    .header h1 { font-size: 1.6rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+    .header h1 span { color: #7dd3fc; }
+    .header .sub { font-size: 0.8rem; opacity: 0.6; margin-top: 4px; }
+    .ski-icon { font-size: 2rem; margin-bottom: 6px; display: block; }
 
-    /* — Day Card — */
-    .day-card {
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      margin-bottom: 20px;
-      overflow: hidden;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-      transition: transform 0.2s;
-    }
-    .day-card:hover { transform: translateY(-2px); }
-
-    .day-header {
-      padding: 16px 20px;
-      color: #fff;
-      font-weight: 700;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .day-header .day-icon { font-size: 1.4rem; }
-    .day-header .day-date { opacity: 0.85; font-weight: 400; font-size: 0.85rem; margin-left: auto; }
-
-    .monday .day-header    { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-    .tuesday .day-header   { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
-    .wednesday .day-header { background: linear-gradient(135deg, #059669, #10b981); }
-    .thursday .day-header  { background: linear-gradient(135deg, #d97706, #f59e0b); }
-    .friday .day-header    { background: linear-gradient(135deg, #dc2626, #ef4444); }
-
-    .day-body { padding: 16px 20px; }
-
-    .event {
-      padding: 12px 0;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-    }
-    .event:last-child { border-bottom: none; }
-    .event-time {
-      font-weight: 700;
-      font-size: 0.8rem;
-      color: #6b7280;
-      min-width: 60px;
-      padding-top: 2px;
-    }
-    .event-details h3 {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 3px;
-    }
-    .event-details p {
-      font-size: 0.82rem;
-      color: #6b7280;
-      line-height: 1.4;
-    }
-    .event-badge {
-      display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 50px;
-      margin-top: 4px;
-    }
-    .badge-adults { background: #ede9fe; color: #7c3aed; }
-    .badge-everyone { background: #dbeafe; color: #2563eb; }
-    .badge-optional { background: #fef3c7; color: #d97706; }
-    .badge-bday { background: #fce7f3; color: #db2777; }
-
-    /* — Footer — */
-    .footer {
-      text-align: center;
-      padding: 30px 20px;
-      color: #fff;
-      font-size: 0.75rem;
-      opacity: 0.6;
-      position: relative; z-index: 1;
-    }
-
-    /* — Fun extras — */
-    .mountain-divider {
-      text-align: center;
-      font-size: 1.5rem;
-      margin: 10px 0;
-      opacity: 0.3;
-      letter-spacing: 6px;
-    }
-
-    .pro-tip {
-      background: rgba(255,255,255,0.15);
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 24px;
-      color: #fff;
-      font-size: 0.85rem;
-      text-align: center;
-      position: relative; z-index: 1;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .pro-tip strong { color: #7dd3fc; }
-
-    .notes-section {
-      background: rgba(255,255,255,0.92);
-      backdrop-filter: blur(10px);
+    /* ── Cards ── */
+    .card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 16px;
       padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      margin-bottom: 16px;
     }
-    .notes-section h2 {
-      font-size: 1rem;
-      margin-bottom: 10px;
-      color: #1a1a2e;
+    .card h2 { font-size: 1rem; margin-bottom: 12px; }
+    .card h3 { font-size: 0.9rem; font-weight: 600; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 0.9rem;
+      transition: all 0.2s;
     }
-    .notes-section ul {
-      list-style: none;
-      padding: 0;
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-secondary { background: rgba(255,255,255,0.15); color: #fff; }
+    .btn-secondary:hover { background: rgba(255,255,255,0.25); }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-danger { background: #ef4444; color: #fff; }
+    .btn-sm { padding: 8px 14px; font-size: 0.8rem; border-radius: 8px; }
+    .btn-block { width: 100%; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── Inputs ── */
+    .input {
+      width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.08); color: #fff; font-size: 0.9rem; outline: none;
+      transition: border 0.2s;
     }
-    .notes-section li {
-      font-size: 0.85rem;
-      padding: 6px 0;
-      border-bottom: 1px solid #f3f4f6;
-      color: #4b5563;
+    .input::placeholder { color: rgba(255,255,255,0.4); }
+    .input:focus { border-color: #3b82f6; }
+    .input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .input-row .input { flex: 1; }
+    label { font-size: 0.8rem; font-weight: 500; margin-bottom: 6px; display: block; opacity: 0.7; }
+
+    /* ── Member chips ── */
+    .member-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 50px; font-size: 0.8rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; user-select: none;
     }
-    .notes-section li:last-child { border-bottom: none; }
-    .notes-section li::before { content: "⛷️ "; }
+    .chip-default { background: rgba(255,255,255,0.12); color: #fff; }
+    .chip-selected { background: #3b82f6; color: #fff; }
+    .chip-in { background: #10b981; color: #fff; }
+    .chip-out { background: #ef4444; color: #fff; }
+    .chip-pending { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.6); }
+    .chip .remove { font-size: 1rem; line-height: 1; opacity: 0.6; }
+    .chip .remove:hover { opacity: 1; }
+
+    /* ── Event cards ── */
+    .event-card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .event-card .event-header {
+      display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;
+    }
+    .event-card .event-title { font-size: 0.95rem; font-weight: 700; }
+    .event-card .event-meta { font-size: 0.75rem; opacity: 0.6; margin-bottom: 10px; }
+    .event-card .event-notes { font-size: 0.8rem; opacity: 0.7; margin-bottom: 10px; font-style: italic; }
+    .event-badge {
+      font-size: 0.7rem; font-weight: 600; padding: 3px 10px; border-radius: 50px;
+      display: inline-block;
+    }
+    .badge-count { background: rgba(255,255,255,0.15); }
+
+    /* ── RSVP buttons ── */
+    .rsvp-row { display: flex; gap: 8px; margin-top: 10px; }
+    .rsvp-btn {
+      flex: 1; padding: 10px; border-radius: 10px; font-weight: 600; font-size: 0.85rem;
+      text-align: center; transition: all 0.2s; border: 2px solid transparent;
+    }
+    .rsvp-in { background: rgba(16,185,129,0.15); color: #6ee7b7; border-color: rgba(16,185,129,0.3); }
+    .rsvp-in.active { background: #10b981; color: #fff; border-color: #10b981; }
+    .rsvp-out { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+    .rsvp-out.active { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+    /* ── Attendees list ── */
+    .attendees { margin-top: 10px; }
+    .attendee-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.82rem;
+    }
+    .attendee-row:last-child { border: none; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px;
+    }
+    .dot-in { background: #10b981; }
+    .dot-out { background: #ef4444; }
+    .dot-pending { background: #6b7280; }
+
+    /* ── Nav bar ── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(11,29,58,0.95); backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex; z-index: 10; padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      padding: 10px 0; font-size: 0.65rem; font-weight: 500; opacity: 0.5;
+      color: #fff; text-decoration: none; cursor: pointer; transition: opacity 0.2s;
+      background: none; border: none;
+    }
+    .nav-item.active { opacity: 1; color: #7dd3fc; }
+    .nav-icon { font-size: 1.3rem; margin-bottom: 2px; }
+
+    /* ── Admin: member select grid ── */
+    .select-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+    .select-chip {
+      padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; user-select: none;
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5);
+      border: 2px solid transparent;
+    }
+    .select-chip.selected {
+      background: rgba(59,130,246,0.2); color: #7dd3fc; border-color: #3b82f6;
+    }
+
+    /* ── Share link ── */
+    .share-box {
+      background: rgba(0,0,0,0.3); border-radius: 10px; padding: 12px; margin: 12px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .share-box code { flex: 1; font-size: 0.75rem; word-break: break-all; opacity: 0.8; }
+
+    /* ── Misc ── */
+    .divider { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0; }
+    .text-center { text-align: center; }
+    .mt-12 { margin-top: 12px; }
+    .mt-16 { margin-top: 16px; }
+    .mb-8 { margin-bottom: 8px; }
+    .mb-16 { margin-bottom: 16px; }
+    .text-sm { font-size: 0.8rem; }
+    .text-xs { font-size: 0.7rem; }
+    .text-muted { opacity: 0.5; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .admin-tag { font-size: 0.65rem; background: #f59e0b; color: #000; padding: 2px 8px; border-radius: 50px; font-weight: 700; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50;
+      align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1a2744; border-radius: 20px 20px 0 0; width: 100%; max-width: 500px;
+      max-height: 85vh; overflow-y: auto; padding: 24px 20px 40px;
+    }
+    .modal h2 { font-size: 1.1rem; margin-bottom: 16px; }
+    .modal .close-btn {
+      position: absolute; top: 16px; right: 16px; background: none; color: #fff;
+      font-size: 1.3rem; opacity: 0.5; border: none; cursor: pointer;
+    }
+    .form-group { margin-bottom: 14px; }
+
+    /* ── Loading ── */
+    .loader { text-align: center; padding: 40px; opacity: 0.5; }
+    .spinner {
+      width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #7dd3fc; border-radius: 50%; animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Color coding for days */
+    .day-mon { border-left: 3px solid #3b82f6; }
+    .day-tue { border-left: 3px solid #8b5cf6; }
+    .day-wed { border-left: 3px solid #10b981; }
+    .day-thu { border-left: 3px solid #f59e0b; }
+    .day-fri { border-left: 3px solid #ef4444; }
+    .day-sat { border-left: 3px solid #ec4899; }
+    .day-sun { border-left: 3px solid #6366f1; }
   </style>
 </head>
 <body>
 
-  <!-- Snowfall -->
-  <div class="snowflakes" id="snowflakes"></div>
+<div class="snowflakes" id="snowflakes"></div>
 
-  <!-- Hero -->
-  <div class="hero">
-    <span class="ski-emoji">🎿</span>
-    <h1>Time<span>Foolery</span>TomTable</h1>
-    <p class="subtitle">Whistler 2026 — The Official* Itinerary</p>
-    <p class="tagline">*"Official" as determined by Tom Adams, Supreme Commander of Dinner Reservations</p>
+<div class="app">
+
+  <!-- ══════════ SCREEN: HOME ══════════ -->
+  <div class="screen active" id="screen-home">
+    <div class="header">
+      <span class="ski-icon">🎿</span>
+      <h1>Time<span>Foolery</span>TomTable</h1>
+      <p class="sub">Plan trips. Wrangle friends. Blame Tom.</p>
+    </div>
+
+    <div class="card">
+      <h2>🏔️ Create a Trip</h2>
+      <div class="form-group">
+        <label>Trip Name</label>
+        <input class="input" id="trip-name-input" placeholder="e.g. Whistler 2026" value="Whistler 2026">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="createTrip()">Create Trip</button>
+    </div>
+
+    <div class="card">
+      <h2>🎟️ Join a Trip</h2>
+      <div class="form-group">
+        <label>Trip Code</label>
+        <input class="input" id="join-code-input" placeholder="Enter trip code">
+      </div>
+      <button class="btn btn-secondary btn-block" onclick="joinTrip()">Join Trip</button>
+    </div>
+
+    <p class="text-center text-xs text-muted mt-16">Not affiliated with Whistler Blackcomb or any responsible adult.</p>
   </div>
 
-  <div class="container">
-
-    <div class="pro-tip">
-      <strong>Crew size:</strong> 32 strong. That's basically a small ski lodge. Tom booked all of this. Buy that man a drink. 🍺
+  <!-- ══════════ SCREEN: PICK NAME ══════════ -->
+  <div class="screen" id="screen-pick-name">
+    <div class="header">
+      <span class="ski-icon">🎿</span>
+      <h1>Who are you?</h1>
+      <p class="sub" id="pick-trip-name"></p>
     </div>
 
-    <!-- MONDAY -->
-    <div class="day-card monday">
-      <div class="day-header">
-        <span class="day-icon">🔵</span>
-        Monday
-        <span class="day-date">March 30</span>
-      </div>
-      <div class="day-body">
-        <div class="event">
-          <div class="event-time">6:30 PM</div>
-          <div class="event-details">
-            <h3>Teppan Village Hibachi</h3>
-            <p>Dinner for 32. Show up sharp — they'll seat as you arrive but don't push it.</p>
-            <span class="event-badge badge-everyone">Everyone</span>
-          </div>
-        </div>
-        <div class="event">
-          <div class="event-time">After</div>
-          <div class="event-details">
-            <h3>Rocky Mountain Chocolate Factory</h3>
-            <p>Non-negotiable. Tom says "for the win" and we don't argue with Tom.</p>
-            <span class="event-badge badge-everyone">Everyone</span>
-          </div>
-        </div>
-      </div>
+    <div class="card">
+      <h2>Pick Your Name</h2>
+      <div id="name-pick-list" class="member-list"></div>
     </div>
-
-    <!-- TUESDAY -->
-    <div class="day-card tuesday">
-      <div class="day-header">
-        <span class="day-icon">🟣</span>
-        Tuesday
-        <span class="day-date">March 31</span>
-      </div>
-      <div class="day-body">
-        <div class="event">
-          <div class="event-time">5:30 PM</div>
-          <div class="event-details">
-            <h3>Wild Blue — Adult Dinner</h3>
-            <p>Celebrating the Adams anniversary & Ashley's birthday! Dinner for 15.</p>
-            <span class="event-badge badge-adults">Adults Only</span>
-            <span class="event-badge badge-bday">🎂 Anniversary + Bday</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- WEDNESDAY -->
-    <div class="day-card wednesday">
-      <div class="day-header">
-        <span class="day-icon">🟢</span>
-        Wednesday
-        <span class="day-date">April 1</span>
-      </div>
-      <div class="day-body">
-        <div class="event">
-          <div class="event-time">1:00 PM</div>
-          <div class="event-details">
-            <h3>Christine's on Blackcomb — Adult Lunch</h3>
-            <p>Lunch for 15 celebrating Sarah's birthday. On-mountain dining doesn't get better than this.</p>
-            <span class="event-badge badge-adults">Adults Only</span>
-            <span class="event-badge badge-bday">🎂 Sarah's Bday</span>
-          </div>
-        </div>
-        <div class="event">
-          <div class="event-time">Evening</div>
-          <div class="event-details">
-            <h3>Sushi Village — Dinner with Kids</h3>
-            <p>Dinner for 28. No Sprague fam this one.</p>
-            <span class="event-badge badge-everyone">Everyone (minus Spragues)</span>
-          </div>
-        </div>
-        <div class="event">
-          <div class="event-time">After</div>
-          <div class="event-details">
-            <h3>Vallea Lumina Forest Light Walk</h3>
-            <p>Magical nighttime forest experience with kids. Tickets still TBD — speak up if interested!</p>
-            <span class="event-badge badge-optional">Optional — Need Tickets</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- THURSDAY -->
-    <div class="day-card thursday">
-      <div class="day-header">
-        <span class="day-icon">🟡</span>
-        Thursday
-        <span class="day-date">April 2</span>
-      </div>
-      <div class="day-body">
-        <div class="event">
-          <div class="event-time">3:30 PM</div>
-          <div class="event-details">
-            <h3>Scandinave Spa — Hot/Cold/Sauna</h3>
-            <p>Arrive at 3:30 for the hot/cold bath & sauna experience. Tom says "it's amazing!" and we trust Tom.</p>
-            <span class="event-badge badge-adults">Adults</span>
-          </div>
-        </div>
-        <div class="event">
-          <div class="event-time">5:15 PM</div>
-          <div class="event-details">
-            <h3>Scandinave Spa — Massages</h3>
-            <p>Massages booked for 5:15. You've earned it after three days of skiing.</p>
-            <span class="event-badge badge-adults">Adults</span>
-          </div>
-        </div>
-        <div class="event">
-          <div class="event-time">7:30 PM</div>
-          <div class="event-details">
-            <h3>Bearfoot Bistro — Adult Dinner</h3>
-            <p>No Jones' this evening. Fancy vibes.</p>
-            <span class="event-badge badge-adults">Adults (No Jones')</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- FRIDAY -->
-    <div class="day-card friday">
-      <div class="day-header">
-        <span class="day-icon">🔴</span>
-        Friday
-        <span class="day-date">April 3</span>
-      </div>
-      <div class="day-body">
-        <div class="event">
-          <div class="event-time">TBD</div>
-          <div class="event-details">
-            <h3>Snowmobiling Adventure + Dinner</h3>
-            <p>No Jones'. Belle — Tom wants to discuss if your team is interested. Hit him up.</p>
-            <span class="event-badge badge-optional">Details TBD</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="mountain-divider">▲ ▲ ▲ ▲ ▲</div>
-
-    <!-- Notes -->
-    <div class="notes-section">
-      <h2>Need to Know</h2>
-      <ul>
-        <li>Let Tom know ASAP if you can't make a reservation so he can adjust headcount</li>
-        <li>Vallea Lumina tickets still needed — DM Tom if you want in</li>
-        <li>Belle's crew: talk to Tom about Friday snowmobiling</li>
-        <li>Rocky Mountain Chocolate Factory is apparently mandatory. Don't test Tom on this.</li>
-      </ul>
-    </div>
-
   </div>
 
-  <div class="footer">
-    TimeFooleryTomTable™ — Not affiliated with Whistler Blackcomb, Tom Adams Enterprises, or any responsible adult.<br>
-    Built with love, sarcasm, and an unreasonable number of dinner reservations.<br>
-    © 2026 The Whistler Crew
+  <!-- ══════════ SCREEN: DASHBOARD ══════════ -->
+  <div class="screen" id="screen-dashboard">
+    <div class="header" style="padding-bottom:10px;">
+      <div class="flex-between">
+        <div>
+          <h1 style="font-size:1.2rem; text-align:left;">🎿 <span id="dash-trip-name"></span></h1>
+        </div>
+        <div id="admin-badge"></div>
+      </div>
+      <p class="text-xs text-muted" style="text-align:left;" id="dash-user-name"></p>
+    </div>
+
+    <!-- Tab: Events -->
+    <div id="tab-events">
+      <div id="events-list">
+        <div class="loader"><div class="spinner"></div>Loading events...</div>
+      </div>
+    </div>
+
+    <!-- Tab: Members -->
+    <div id="tab-members" style="display:none;">
+      <div class="card">
+        <div class="flex-between mb-8">
+          <h2>👥 Trip Crew</h2>
+          <span class="text-xs text-muted" id="member-count"></span>
+        </div>
+        <div id="members-display"></div>
+        <div id="admin-add-member" style="display:none;">
+          <hr class="divider">
+          <label>Add Someone</label>
+          <div class="input-row">
+            <input class="input" id="new-member-input" placeholder="Name">
+            <button class="btn btn-primary btn-sm" onclick="addMember()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Settings/Share -->
+    <div id="tab-settings" style="display:none;">
+      <div class="card">
+        <h2>🔗 Share This Trip</h2>
+        <p class="text-sm text-muted mb-8">Send this link to your crew:</p>
+        <div class="share-box">
+          <code id="share-link"></code>
+          <button class="btn btn-sm btn-secondary" onclick="copyLink()">Copy</button>
+        </div>
+        <p class="text-xs text-muted mt-12">Trip code: <strong id="share-code"></strong></p>
+      </div>
+
+      <div class="card" id="admin-settings" style="display:none;">
+        <h2>⚙️ Admin</h2>
+        <button class="btn btn-secondary btn-block mb-8" onclick="loadSampleData()">🏔️ Load Whistler Itinerary</button>
+        <p class="text-xs text-muted">Pre-loads the Whistler 2026 events. Won't duplicate if already loaded.</p>
+      </div>
+
+      <div class="card">
+        <button class="btn btn-secondary btn-block" onclick="switchUser()">Switch User</button>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // Generate snowflakes
-    const container = document.getElementById('snowflakes');
-    const flakes = ['❄', '❅', '❆', '✦', '•'];
-    for (let i = 0; i < 40; i++) {
-      const el = document.createElement('span');
-      el.className = 'snowflake';
-      el.textContent = flakes[Math.floor(Math.random() * flakes.length)];
-      el.style.left = Math.random() * 100 + '%';
-      el.style.animationDuration = (4 + Math.random() * 6) + 's';
-      el.style.animationDelay = Math.random() * 8 + 's';
-      el.style.fontSize = (0.6 + Math.random() * 1) + 'rem';
-      el.style.opacity = 0.3 + Math.random() * 0.5;
-      container.appendChild(el);
+</div><!-- /app -->
+
+<!-- ── Bottom Nav ── -->
+<div class="bottom-nav" id="bottom-nav" style="display:none;">
+  <button class="nav-item active" onclick="switchTab('events')">
+    <span class="nav-icon">📋</span>Events
+  </button>
+  <button class="nav-item" onclick="switchTab('members')">
+    <span class="nav-icon">👥</span>Crew
+  </button>
+  <button class="nav-item" onclick="switchTab('settings')">
+    <span class="nav-icon">⚙️</span>Settings
+  </button>
+</div>
+
+<!-- ── Create Event Modal ── -->
+<div class="modal-overlay" id="modal-create-event">
+  <div class="modal">
+    <h2 id="modal-event-title">Create Event</h2>
+    <div class="form-group">
+      <label>Event Name</label>
+      <input class="input" id="evt-name" placeholder="e.g. Hibachi Dinner">
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input class="input" id="evt-date" type="date">
+    </div>
+    <div class="form-group">
+      <label>Time</label>
+      <input class="input" id="evt-time" placeholder="e.g. 6:30 PM">
+    </div>
+    <div class="form-group">
+      <label>Location</label>
+      <input class="input" id="evt-location" placeholder="e.g. Teppan Village">
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <input class="input" id="evt-notes" placeholder="Optional details...">
+    </div>
+    <div class="form-group">
+      <label>Who's Invited? (tap to select)</label>
+      <div class="select-grid" id="evt-member-select"></div>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeEventModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="saveEvent()">Save Event</button>
+    </div>
+    <div id="delete-event-btn" style="display:none; margin-top:12px;">
+      <button class="btn btn-danger btn-block btn-sm" onclick="deleteEvent()">Delete Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── FAB ── -->
+<button id="fab" style="display:none; position:fixed; bottom:80px; right:20px; width:56px; height:56px;
+  border-radius:50%; background:#3b82f6; color:#fff; font-size:1.8rem; z-index:20;
+  box-shadow:0 4px 20px rgba(59,130,246,0.4); border:none; cursor:pointer;"
+  onclick="openCreateEvent()">+</button>
+
+
+<script>
+// ════════════════════════════════════════
+// FIREBASE CONFIG — REPLACE WITH YOUR OWN
+// ════════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyBBPq66qXWSnRXcnDyI8-pblytSbkH1LWs",
+  authDomain: "timefoolerytomtable.firebaseapp.com",
+  projectId: "timefoolerytomtable",
+  storageBucket: "timefoolerytomtable.firebasestorage.app",
+  messagingSenderId: "70367781123",
+  appId: "1:70367781123:web:8c938ad11b84c545e8c936"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let state = {
+  tripCode: null,
+  tripName: null,
+  userId: null,
+  userName: null,
+  isAdmin: false,
+  members: [],
+  events: [],
+  editingEventId: null
+};
+
+let unsubMembers = null;
+let unsubEvents = null;
+
+// ════════════════════════════════════════
+// SCREENS
+// ════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  const showNav = (id === 'dashboard');
+  document.getElementById('bottom-nav').style.display = showNav ? 'flex' : 'none';
+  document.getElementById('fab').style.display = (showNav && state.isAdmin) ? 'block' : 'none';
+}
+
+// ════════════════════════════════════════
+// CREATE TRIP
+// ════════════════════════════════════════
+async function createTrip() {
+  const name = document.getElementById('trip-name-input').value.trim();
+  if (!name) return;
+
+  const code = generateCode();
+  await db.collection('trips').doc(code).set({
+    name: name,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    members: []
+  });
+
+  state.tripCode = code;
+  state.tripName = name;
+  state.isAdmin = true;
+
+  // Save to localStorage
+  localStorage.setItem('lastTrip', code);
+  localStorage.setItem('isAdmin_' + code, 'true');
+
+  showPickName();
+}
+
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+// ════════════════════════════════════════
+// JOIN TRIP
+// ════════════════════════════════════════
+async function joinTrip(code) {
+  code = code || document.getElementById('join-code-input').value.trim().toUpperCase();
+  if (!code) return;
+
+  const doc = await db.collection('trips').doc(code).get();
+  if (!doc.exists) {
+    alert('Trip not found. Check the code and try again.');
+    return;
+  }
+
+  state.tripCode = code;
+  state.tripName = doc.data().name;
+  state.isAdmin = localStorage.getItem('isAdmin_' + code) === 'true';
+
+  localStorage.setItem('lastTrip', code);
+
+  showPickName();
+}
+
+// ════════════════════════════════════════
+// PICK NAME
+// ════════════════════════════════════════
+function showPickName() {
+  document.getElementById('pick-trip-name').textContent = state.tripName;
+  showScreen('pick-name');
+
+  // Listen for members
+  if (unsubMembers) unsubMembers();
+  unsubMembers = db.collection('trips').doc(state.tripCode).onSnapshot(doc => {
+    const data = doc.data();
+    state.members = data.members || [];
+    renderNamePicks();
+  });
+}
+
+function renderNamePicks() {
+  const el = document.getElementById('name-pick-list');
+  let html = '';
+  state.members.forEach(m => {
+    html += `<div class="chip chip-default" onclick="selectName('${m.id}','${esc(m.name)}')">${m.name}</div>`;
+  });
+  // Add new name option
+  html += `<div class="chip chip-default" onclick="addNewName()" style="border:1px dashed rgba(255,255,255,0.3);">+ Add Yourself</div>`;
+  el.innerHTML = html;
+}
+
+function selectName(id, name) {
+  state.userId = id;
+  state.userName = name;
+  localStorage.setItem('userId_' + state.tripCode, id);
+  localStorage.setItem('userName_' + state.tripCode, name);
+  enterDashboard();
+}
+
+function addNewName() {
+  const name = prompt('Enter your name:');
+  if (!name || !name.trim()) return;
+  const id = 'mem_' + Date.now();
+  db.collection('trips').doc(state.tripCode).update({
+    members: firebase.firestore.FieldValue.arrayUnion({ id, name: name.trim() })
+  }).then(() => selectName(id, name.trim()));
+}
+
+// ════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════
+function enterDashboard() {
+  showScreen('dashboard');
+  document.getElementById('dash-trip-name').textContent = state.tripName;
+  document.getElementById('dash-user-name').textContent = 'Logged in as ' + state.userName;
+  document.getElementById('admin-badge').innerHTML = state.isAdmin ? '<span class="admin-tag">ADMIN</span>' : '';
+  document.getElementById('admin-add-member').style.display = state.isAdmin ? 'block' : 'none';
+  document.getElementById('admin-settings').style.display = state.isAdmin ? 'block' : 'none';
+  document.getElementById('fab').style.display = state.isAdmin ? 'block' : 'none';
+
+  const baseUrl = window.location.origin + window.location.pathname;
+  document.getElementById('share-link').textContent = baseUrl + '?trip=' + state.tripCode;
+  document.getElementById('share-code').textContent = state.tripCode;
+
+  subscribeToData();
+  switchTab('events');
+}
+
+function subscribeToData() {
+  // Members
+  if (unsubMembers) unsubMembers();
+  unsubMembers = db.collection('trips').doc(state.tripCode).onSnapshot(doc => {
+    state.members = doc.data().members || [];
+    renderMembers();
+    document.getElementById('member-count').textContent = state.members.length + ' people';
+  });
+
+  // Events
+  if (unsubEvents) unsubEvents();
+  unsubEvents = db.collection('trips').doc(state.tripCode).collection('events')
+    .orderBy('date').orderBy('time')
+    .onSnapshot(snap => {
+      state.events = [];
+      snap.forEach(doc => state.events.push({ id: doc.id, ...doc.data() }));
+      renderEvents();
+    });
+}
+
+// ════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════
+function switchTab(tab) {
+  ['events','members','settings'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = (t === tab) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.toggle('active', ['events','members','settings'][i] === tab);
+  });
+  document.getElementById('fab').style.display = (tab === 'events' && state.isAdmin) ? 'block' : 'none';
+}
+
+// ════════════════════════════════════════
+// RENDER EVENTS
+// ════════════════════════════════════════
+function renderEvents() {
+  const el = document.getElementById('events-list');
+  if (state.events.length === 0) {
+    el.innerHTML = `<div class="card text-center">
+      <p class="text-muted">No events yet.</p>
+      ${state.isAdmin ? '<p class="text-sm mt-12">Tap + to create one, or load the sample itinerary from Settings.</p>' : ''}
+    </div>`;
+    return;
+  }
+
+  let html = '';
+  let lastDate = '';
+
+  state.events.forEach(evt => {
+    // Date header
+    if (evt.date !== lastDate) {
+      lastDate = evt.date;
+      const d = new Date(evt.date + 'T12:00:00');
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+      const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      html += `<div style="margin:16px 0 8px; font-size:0.85rem; font-weight:700; opacity:0.6;">
+        ${dayName}, ${dateStr}</div>`;
     }
-  </script>
 
+    const invitees = evt.invitees || [];
+    const myInvite = invitees.find(i => i.memberId === state.userId);
+    const inCount = invitees.filter(i => i.status === 'in').length;
+    const outCount = invitees.filter(i => i.status === 'out').length;
+    const pendingCount = invitees.filter(i => i.status === 'pending').length;
+    const dayClass = getDayClass(evt.date);
+
+    html += `<div class="event-card ${dayClass}">`;
+    html += `<div class="event-header">
+      <div>
+        <div class="event-title">${esc(evt.name)}</div>
+        <div class="event-meta">${esc(evt.time || '')} ${evt.location ? '· ' + esc(evt.location) : ''}</div>
+      </div>
+      ${state.isAdmin ? `<button class="btn btn-sm btn-secondary" onclick="editEvent('${evt.id}')" style="padding:4px 10px; font-size:0.7rem;">Edit</button>` : ''}
+    </div>`;
+
+    if (evt.notes) {
+      html += `<div class="event-notes">${esc(evt.notes)}</div>`;
+    }
+
+    // Counts
+    html += `<div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="event-badge" style="background:rgba(16,185,129,0.2); color:#6ee7b7;">✅ ${inCount} in</span>
+      <span class="event-badge" style="background:rgba(239,68,68,0.2); color:#fca5a5;">❌ ${outCount} out</span>
+      ${pendingCount > 0 ? `<span class="event-badge badge-count">❓ ${pendingCount} pending</span>` : ''}
+    </div>`;
+
+    // RSVP for current user
+    if (myInvite) {
+      html += `<div class="rsvp-row">
+        <button class="rsvp-btn rsvp-in ${myInvite.status === 'in' ? 'active' : ''}"
+          onclick="rsvp('${evt.id}','in')">✅ I'm In</button>
+        <button class="rsvp-btn rsvp-out ${myInvite.status === 'out' ? 'active' : ''}"
+          onclick="rsvp('${evt.id}','out')">❌ I'm Out</button>
+      </div>`;
+    } else {
+      html += `<div class="text-xs text-muted mt-12">You're not on the invite list for this one.</div>`;
+    }
+
+    // Attendee list (collapsible)
+    html += `<details style="margin-top:10px;">
+      <summary class="text-xs text-muted" style="cursor:pointer;">Who's going (${invitees.length} invited)</summary>
+      <div class="attendees">`;
+    invitees.forEach(inv => {
+      const dotClass = inv.status === 'in' ? 'dot-in' : inv.status === 'out' ? 'dot-out' : 'dot-pending';
+      const statusLabel = inv.status === 'in' ? 'Going' : inv.status === 'out' ? 'Not going' : 'Pending';
+      html += `<div class="attendee-row">
+        <span><span class="status-dot ${dotClass}"></span>${esc(inv.name)}</span>
+        <span class="text-xs text-muted">${statusLabel}</span>
+      </div>`;
+    });
+    html += `</div></details>`;
+    html += `</div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+function getDayClass(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  const day = d.getDay();
+  return ['day-sun','day-mon','day-tue','day-wed','day-thu','day-fri','day-sat'][day] || '';
+}
+
+// ════════════════════════════════════════
+// RSVP
+// ════════════════════════════════════════
+async function rsvp(eventId, status) {
+  const evtRef = db.collection('trips').doc(state.tripCode).collection('events').doc(eventId);
+  const doc = await evtRef.get();
+  const data = doc.data();
+  const invitees = data.invitees || [];
+  const idx = invitees.findIndex(i => i.memberId === state.userId);
+  if (idx === -1) return;
+
+  // Toggle: if already this status, go back to pending
+  invitees[idx].status = invitees[idx].status === status ? 'pending' : status;
+  await evtRef.update({ invitees });
+}
+
+// ════════════════════════════════════════
+// MEMBERS
+// ════════════════════════════════════════
+function renderMembers() {
+  const el = document.getElementById('members-display');
+  let html = '';
+  state.members.forEach(m => {
+    const isYou = m.id === state.userId;
+    html += `<div class="attendee-row">
+      <span>${esc(m.name)} ${isYou ? '<span class="text-xs text-muted">(you)</span>' : ''}</span>
+      ${state.isAdmin && !isYou ? `<button class="text-xs text-muted" style="background:none; border:none; cursor:pointer; color:#ef4444;"
+        onclick="removeMember('${m.id}')">Remove</button>` : ''}
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+async function addMember() {
+  const input = document.getElementById('new-member-input');
+  const name = input.value.trim();
+  if (!name) return;
+  const id = 'mem_' + Date.now();
+  await db.collection('trips').doc(state.tripCode).update({
+    members: firebase.firestore.FieldValue.arrayUnion({ id, name })
+  });
+  input.value = '';
+}
+
+async function removeMember(id) {
+  if (!confirm('Remove this person from the trip?')) return;
+  const member = state.members.find(m => m.id === id);
+  if (member) {
+    await db.collection('trips').doc(state.tripCode).update({
+      members: firebase.firestore.FieldValue.arrayRemove(member)
+    });
+  }
+}
+
+// ════════════════════════════════════════
+// CREATE/EDIT EVENT
+// ════════════════════════════════════════
+function openCreateEvent() {
+  state.editingEventId = null;
+  document.getElementById('modal-event-title').textContent = 'Create Event';
+  document.getElementById('evt-name').value = '';
+  document.getElementById('evt-date').value = '';
+  document.getElementById('evt-time').value = '';
+  document.getElementById('evt-location').value = '';
+  document.getElementById('evt-notes').value = '';
+  document.getElementById('delete-event-btn').style.display = 'none';
+  renderMemberSelect([]);
+  document.getElementById('modal-create-event').classList.add('open');
+}
+
+function editEvent(eventId) {
+  const evt = state.events.find(e => e.id === eventId);
+  if (!evt) return;
+  state.editingEventId = eventId;
+  document.getElementById('modal-event-title').textContent = 'Edit Event';
+  document.getElementById('evt-name').value = evt.name || '';
+  document.getElementById('evt-date').value = evt.date || '';
+  document.getElementById('evt-time').value = evt.time || '';
+  document.getElementById('evt-location').value = evt.location || '';
+  document.getElementById('evt-notes').value = evt.notes || '';
+  document.getElementById('delete-event-btn').style.display = 'block';
+  const selectedIds = (evt.invitees || []).map(i => i.memberId);
+  renderMemberSelect(selectedIds);
+  document.getElementById('modal-create-event').classList.add('open');
+}
+
+function renderMemberSelect(selectedIds) {
+  const el = document.getElementById('evt-member-select');
+  let html = '';
+  state.members.forEach(m => {
+    const sel = selectedIds.includes(m.id);
+    html += `<div class="select-chip ${sel ? 'selected' : ''}" data-id="${m.id}"
+      onclick="this.classList.toggle('selected')">${esc(m.name)}</div>`;
+  });
+  html += `<div class="select-chip" onclick="selectAllMembers()" style="border:1px dashed rgba(255,255,255,0.2);">Select All</div>`;
+  el.innerHTML = html;
+}
+
+function selectAllMembers() {
+  document.querySelectorAll('#evt-member-select .select-chip[data-id]').forEach(c => c.classList.add('selected'));
+}
+
+function closeEventModal() {
+  document.getElementById('modal-create-event').classList.remove('open');
+}
+
+async function saveEvent() {
+  const name = document.getElementById('evt-name').value.trim();
+  if (!name) { alert('Event name is required.'); return; }
+
+  const selectedIds = [];
+  document.querySelectorAll('#evt-member-select .select-chip.selected').forEach(c => {
+    if (c.dataset.id) selectedIds.push(c.dataset.id);
+  });
+
+  const eventData = {
+    name,
+    date: document.getElementById('evt-date').value,
+    time: document.getElementById('evt-time').value.trim(),
+    location: document.getElementById('evt-location').value.trim(),
+    notes: document.getElementById('evt-notes').value.trim()
+  };
+
+  if (state.editingEventId) {
+    // Editing — preserve existing RSVP statuses
+    const existingEvt = state.events.find(e => e.id === state.editingEventId);
+    const oldInvitees = existingEvt ? existingEvt.invitees || [] : [];
+    const invitees = selectedIds.map(id => {
+      const existing = oldInvitees.find(i => i.memberId === id);
+      const member = state.members.find(m => m.id === id);
+      return existing || { memberId: id, name: member ? member.name : 'Unknown', status: 'pending' };
+    });
+    eventData.invitees = invitees;
+    await db.collection('trips').doc(state.tripCode).collection('events').doc(state.editingEventId).update(eventData);
+  } else {
+    // New event
+    eventData.invitees = selectedIds.map(id => {
+      const member = state.members.find(m => m.id === id);
+      return { memberId: id, name: member ? member.name : 'Unknown', status: 'pending' };
+    });
+    eventData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection('trips').doc(state.tripCode).collection('events').add(eventData);
+  }
+
+  closeEventModal();
+}
+
+async function deleteEvent() {
+  if (!state.editingEventId) return;
+  if (!confirm('Delete this event?')) return;
+  await db.collection('trips').doc(state.tripCode).collection('events').doc(state.editingEventId).delete();
+  closeEventModal();
+}
+
+// ════════════════════════════════════════
+// SAMPLE DATA
+// ════════════════════════════════════════
+async function loadSampleData() {
+  if (!confirm('Load the Whistler 2026 itinerary? This will add events (won\'t duplicate existing ones).')) return;
+
+  const sampleEvents = [
+    { name: 'Teppan Village Hibachi', date: '2026-03-30', time: '6:30 PM', location: 'Teppan Village', notes: 'Dinner for 32. Be there sharp! Rocky Mountain Chocolate Factory after.' },
+    { name: 'Wild Blue — Adult Dinner', date: '2026-03-31', time: '5:30 PM', location: 'Wild Blue', notes: 'Celebrating Adams anniversary & Ashley\'s birthday. Dinner for 15.' },
+    { name: 'Christine\'s — Adult Lunch', date: '2026-04-01', time: '1:00 PM', location: 'Christine\'s on Blackcomb', notes: 'Celebrating Sarah\'s birthday. Lunch for 15.' },
+    { name: 'Sushi Village — Dinner w/ Kids', date: '2026-04-01', time: 'Evening', location: 'Sushi Village', notes: 'Dinner for 28. No Sprague fam.' },
+    { name: 'Vallea Lumina Forest Walk', date: '2026-04-01', time: 'After dinner', location: 'Vallea Lumina', notes: 'Magical forest light walk with kids. Still need tickets!' },
+    { name: 'Scandinave Spa', date: '2026-04-02', time: '3:30 PM', location: 'Scandinave Spa', notes: 'Hot/cold bath & sauna. Massages at 5:15. Tom says it\'s amazing.' },
+    { name: 'Bearfoot Bistro — Adult Dinner', date: '2026-04-02', time: '7:30 PM', location: 'Bearfoot Bistro', notes: 'No Jones\'. Fancy vibes.' },
+    { name: 'Snowmobiling Adventure + Dinner', date: '2026-04-03', time: 'TBD', location: 'TBD', notes: 'No Jones\'. Belle — discuss with Tom if your team is interested.' }
+  ];
+
+  // Check for existing events to avoid duplicates
+  const existing = await db.collection('trips').doc(state.tripCode).collection('events').get();
+  const existingNames = new Set();
+  existing.forEach(doc => existingNames.add(doc.data().name));
+
+  const allMemberIds = state.members.map(m => m.id);
+  let added = 0;
+
+  for (const evt of sampleEvents) {
+    if (existingNames.has(evt.name)) continue;
+    evt.invitees = state.members.map(m => ({ memberId: m.id, name: m.name, status: 'pending' }));
+    evt.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection('trips').doc(state.tripCode).collection('events').add(evt);
+    added++;
+  }
+
+  alert(`Added ${added} events!`);
+}
+
+// ════════════════════════════════════════
+// SHARE
+// ════════════════════════════════════════
+function copyLink() {
+  const link = document.getElementById('share-link').textContent;
+  navigator.clipboard.writeText(link).then(() => {
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+function switchUser() {
+  localStorage.removeItem('userId_' + state.tripCode);
+  localStorage.removeItem('userName_' + state.tripCode);
+  showPickName();
+}
+
+// ════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════
+function esc(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+function init() {
+  // Generate snowflakes
+  const sf = document.getElementById('snowflakes');
+  const flakes = ['❄','❅','❆','✦','•'];
+  for (let i = 0; i < 30; i++) {
+    const el = document.createElement('span');
+    el.className = 'snowflake';
+    el.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+    el.style.left = Math.random()*100 + '%';
+    el.style.animationDuration = (4 + Math.random()*6) + 's';
+    el.style.animationDelay = Math.random()*8 + 's';
+    el.style.fontSize = (0.6 + Math.random()*0.8) + 'rem';
+    el.style.opacity = 0.2 + Math.random()*0.4;
+    sf.appendChild(el);
+  }
+
+  // Check URL for trip code
+  const params = new URLSearchParams(window.location.search);
+  const tripCode = params.get('trip');
+
+  if (tripCode) {
+    joinTrip(tripCode);
+    return;
+  }
+
+  // Check localStorage for returning user
+  const lastTrip = localStorage.getItem('lastTrip');
+  if (lastTrip) {
+    const savedUserId = localStorage.getItem('userId_' + lastTrip);
+    const savedUserName = localStorage.getItem('userName_' + lastTrip);
+    if (savedUserId && savedUserName) {
+      // Auto-rejoin
+      db.collection('trips').doc(lastTrip).get().then(doc => {
+        if (doc.exists) {
+          state.tripCode = lastTrip;
+          state.tripName = doc.data().name;
+          state.userId = savedUserId;
+          state.userName = savedUserName;
+          state.isAdmin = localStorage.getItem('isAdmin_' + lastTrip) === 'true';
+          enterDashboard();
+        }
+      });
+      return;
+    }
+  }
+
+  showScreen('home');
+}
+
+// Close modal on overlay click
+document.getElementById('modal-create-event').addEventListener('click', function(e) {
+  if (e.target === this) closeEventModal();
+});
+
+init();
+</script>
 </body>
 </html>
