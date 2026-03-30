@@ -573,11 +573,20 @@ function subscribeToData() {
   // Events
   if (unsubEvents) unsubEvents();
   unsubEvents = db.collection('trips').doc(state.tripCode).collection('events')
-    .orderBy('date').orderBy('time')
+    .orderBy('date')
     .onSnapshot(snap => {
       state.events = [];
       snap.forEach(doc => state.events.push({ id: doc.id, ...doc.data() }));
+      // Secondary sort by time client-side
+      state.events.sort((a, b) => {
+        if (a.date !== b.date) return (a.date || '').localeCompare(b.date || '');
+        return (a.time || '').localeCompare(b.time || '');
+      });
       renderEvents();
+    }, err => {
+      console.error('Firestore error:', err);
+      document.getElementById('events-list').innerHTML =
+        '<div class="card text-center"><p>Error loading events. Check console.</p></div>';
     });
 }
 
