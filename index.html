@@ -226,6 +226,29 @@
     .day-fri { border-left: 3px solid #ef4444; }
     .day-sat { border-left: 3px solid #ec4899; }
     .day-sun { border-left: 3px solid #6366f1; }
+
+    /* ── Hero Banner ── */
+    .hero-banner { text-align: center; padding: 40px 10px 20px; }
+    .hero-banner .ski-emoji-lg { font-size: 2.5rem; display: block; margin-bottom: 6px; }
+    .hero-banner h1 {
+      font-size: clamp(1.6rem, 5vw, 2.8rem); font-weight: 900;
+      text-transform: uppercase; letter-spacing: 2px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.4); line-height: 1.1;
+    }
+    .hero-banner h1 span { color: #7dd3fc; }
+    .hero-banner .hero-sub {
+      font-size: clamp(0.8rem, 2.5vw, 1rem); margin-top: 8px; opacity: 0.9;
+    }
+    .hero-banner .hero-tagline {
+      margin-top: 12px; font-size: 0.78rem; opacity: 0.6; font-style: italic;
+    }
+    .hero-callout {
+      background: rgba(255,255,255,0.1); backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+      padding: 12px 18px; margin: 16px 0; text-align: center;
+      font-size: 0.85rem;
+    }
+    .hero-callout strong { color: #7dd3fc; }
   </style>
 </head>
 <body>
@@ -236,10 +259,15 @@
 
   <!-- ══════════ SCREEN: HOME ══════════ -->
   <div class="screen active" id="screen-home">
-    <div class="header">
-      <span class="ski-icon">🎿</span>
+    <div class="hero-banner">
+      <span class="hero-banner ski-emoji-lg">🎿</span>
       <h1>Time<span>Foolery</span>TomTable</h1>
-      <p class="sub">Plan trips. Wrangle friends. Blame Tom.</p>
+      <p class="hero-sub">Whistler 2026 — The Official* Itinerary</p>
+      <p class="hero-tagline">*"Official" as determined by Tom Adams, Supreme Commander of Dinner Reservations</p>
+    </div>
+
+    <div class="hero-callout">
+      <strong>Crew size:</strong> 32 strong. That's basically a small ski lodge. Tom booked all of this. Buy that man a drink. 🍺
     </div>
 
     <div class="card">
@@ -265,28 +293,40 @@
 
   <!-- ══════════ SCREEN: PICK NAME ══════════ -->
   <div class="screen" id="screen-pick-name">
-    <div class="header">
-      <span class="ski-icon">🎿</span>
-      <h1>Who are you?</h1>
-      <p class="sub" id="pick-trip-name"></p>
+    <div class="hero-banner">
+      <span class="hero-banner ski-emoji-lg">🎿</span>
+      <h1>Time<span>Foolery</span>TomTable</h1>
+      <p class="hero-sub">Whistler 2026 — The Official* Itinerary</p>
+      <p class="hero-tagline">*"Official" as determined by Tom Adams, Supreme Commander of Dinner Reservations</p>
+    </div>
+
+    <div class="hero-callout">
+      <strong>Crew size:</strong> 32 strong. That's basically a small ski lodge. Tom booked all of this. Buy that man a drink. 🍺
     </div>
 
     <div class="card">
-      <h2>Pick Your Name</h2>
+      <h2>Who Are You?</h2>
+      <p class="text-sm text-muted mb-8" id="pick-trip-name"></p>
       <div id="name-pick-list" class="member-list"></div>
     </div>
   </div>
 
   <!-- ══════════ SCREEN: DASHBOARD ══════════ -->
   <div class="screen" id="screen-dashboard">
-    <div class="header" style="padding-bottom:10px;">
+    <div class="hero-banner" style="padding-bottom:10px;">
+      <span class="hero-banner ski-emoji-lg">🎿</span>
+      <h1>Time<span>Foolery</span>TomTable</h1>
+      <p class="hero-sub">Whistler 2026 — The Official* Itinerary</p>
+      <p class="hero-tagline">*"Official" as determined by Tom Adams, Supreme Commander of Dinner Reservations</p>
+    </div>
+
+    <div class="hero-callout">
       <div class="flex-between">
-        <div>
-          <h1 style="font-size:1.2rem; text-align:left;">🎿 <span id="dash-trip-name"></span></h1>
-        </div>
+        <div><strong>Crew size:</strong> 32 strong. Buy Tom a drink. 🍺</div>
         <div id="admin-badge"></div>
       </div>
-      <p class="text-xs text-muted" style="text-align:left;" id="dash-user-name"></p>
+      <p class="text-xs text-muted" style="margin-top:4px;" id="dash-user-name"></p>
+      <span id="dash-trip-name" style="display:none;"></span>
     </div>
 
     <!-- Tab: Events -->
@@ -331,6 +371,23 @@
         <h2>⚙️ Admin</h2>
         <button class="btn btn-secondary btn-block mb-8" onclick="loadSampleData()">🏔️ Load Whistler Itinerary</button>
         <p class="text-xs text-muted">Pre-loads the Whistler 2026 events. Won't duplicate if already loaded.</p>
+      </div>
+
+      <div class="card" id="admin-unlock-card">
+        <h2>🔓 Unlock Admin</h2>
+        <p class="text-sm text-muted mb-8">Enter the admin passcode to manage events and members.</p>
+        <div class="input-row">
+          <input class="input" id="admin-passcode-input" placeholder="Admin passcode" type="password">
+          <button class="btn btn-primary btn-sm" onclick="unlockAdmin()">Unlock</button>
+        </div>
+        <p id="admin-passcode-error" class="text-xs" style="color:#ef4444; margin-top:6px; display:none;">Wrong passcode. Try again.</p>
+      </div>
+
+      <div class="card" id="admin-lock-card" style="display:none;">
+        <div class="flex-between">
+          <h2>🔐 Admin Mode Active</h2>
+          <button class="btn btn-sm btn-secondary" onclick="lockAdmin()">Lock</button>
+        </div>
       </div>
 
       <div class="card">
@@ -431,6 +488,40 @@ let state = {
 
 let unsubMembers = null;
 let unsubEvents = null;
+
+// Admin passcode — anyone who types this gets admin powers
+const ADMIN_PASSCODE = 'tomrules';
+
+function unlockAdmin() {
+  const input = document.getElementById('admin-passcode-input');
+  const errorEl = document.getElementById('admin-passcode-error');
+  if (input.value.trim().toLowerCase() === ADMIN_PASSCODE) {
+    state.isAdmin = true;
+    localStorage.setItem('isAdmin_' + state.tripCode, 'true');
+    input.value = '';
+    errorEl.style.display = 'none';
+    refreshAdminUI();
+  } else {
+    errorEl.style.display = 'block';
+  }
+}
+
+function lockAdmin() {
+  state.isAdmin = false;
+  localStorage.removeItem('isAdmin_' + state.tripCode);
+  refreshAdminUI();
+}
+
+function refreshAdminUI() {
+  document.getElementById('admin-badge').innerHTML = state.isAdmin ? '<span class="admin-tag">ADMIN</span>' : '';
+  document.getElementById('admin-add-member').style.display = state.isAdmin ? 'block' : 'none';
+  document.getElementById('admin-settings').style.display = state.isAdmin ? 'block' : 'none';
+  document.getElementById('fab').style.display = state.isAdmin ? 'block' : 'none';
+  document.getElementById('admin-unlock-card').style.display = state.isAdmin ? 'none' : 'block';
+  document.getElementById('admin-lock-card').style.display = state.isAdmin ? 'block' : 'none';
+  renderEvents(); // re-render to show/hide edit buttons
+  renderMembers(); // re-render to show/hide remove buttons
+}
 
 // ════════════════════════════════════════
 // SCREENS
@@ -548,10 +639,7 @@ function enterDashboard() {
   showScreen('dashboard');
   document.getElementById('dash-trip-name').textContent = state.tripName;
   document.getElementById('dash-user-name').textContent = 'Logged in as ' + state.userName;
-  document.getElementById('admin-badge').innerHTML = state.isAdmin ? '<span class="admin-tag">ADMIN</span>' : '';
-  document.getElementById('admin-add-member').style.display = state.isAdmin ? 'block' : 'none';
-  document.getElementById('admin-settings').style.display = state.isAdmin ? 'block' : 'none';
-  document.getElementById('fab').style.display = state.isAdmin ? 'block' : 'none';
+  refreshAdminUI();
 
   const baseUrl = window.location.origin + window.location.pathname;
   document.getElementById('share-link').textContent = baseUrl + '?trip=' + state.tripCode;
@@ -651,10 +739,12 @@ function renderEvents() {
     }
 
     // Counts
+    const totalKids = invitees.reduce((sum, i) => sum + (i.kids || 0), 0);
     html += `<div style="display:flex; gap:8px; flex-wrap:wrap;">
       <span class="event-badge" style="background:rgba(16,185,129,0.2); color:#6ee7b7;">✅ ${inCount} in</span>
       <span class="event-badge" style="background:rgba(239,68,68,0.2); color:#fca5a5;">❌ ${outCount} out</span>
       ${pendingCount > 0 ? `<span class="event-badge badge-count">❓ ${pendingCount} pending</span>` : ''}
+      ${totalKids > 0 ? `<span class="event-badge" style="background:rgba(125,211,252,0.2); color:#7dd3fc;">👶 ${totalKids} kids</span>` : ''}
     </div>`;
 
     // RSVP for current user
@@ -665,6 +755,22 @@ function renderEvents() {
         <button class="rsvp-btn rsvp-out ${myInvite.status === 'out' ? 'active' : ''}"
           onclick="rsvp('${evt.id}','out')">❌ I'm Out</button>
       </div>`;
+      // Kids counter — only show when status is 'in'
+      if (myInvite.status === 'in') {
+        const kidCount = myInvite.kids || 0;
+        html += `<div style="display:flex; align-items:center; justify-content:space-between; margin-top:10px;
+          background:rgba(255,255,255,0.06); border-radius:10px; padding:8px 12px;">
+          <span class="text-sm">👶 Bringing kids?</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="btn btn-sm btn-secondary" onclick="updateKids('${evt.id}',-1)"
+              style="width:32px; height:32px; padding:0; border-radius:50%; font-size:1.1rem;"
+              ${kidCount === 0 ? 'disabled' : ''}>−</button>
+            <span style="font-weight:700; font-size:1rem; min-width:20px; text-align:center;">${kidCount}</span>
+            <button class="btn btn-sm btn-secondary" onclick="updateKids('${evt.id}',1)"
+              style="width:32px; height:32px; padding:0; border-radius:50%; font-size:1.1rem;">+</button>
+          </div>
+        </div>`;
+      }
     } else {
       html += `<div class="text-xs text-muted mt-12">You're not on the invite list for this one.</div>`;
     }
@@ -676,9 +782,10 @@ function renderEvents() {
     invitees.forEach(inv => {
       const dotClass = inv.status === 'in' ? 'dot-in' : inv.status === 'out' ? 'dot-out' : 'dot-pending';
       const statusLabel = inv.status === 'in' ? 'Going' : inv.status === 'out' ? 'Not going' : 'Pending';
+      const kidsLabel = (inv.status === 'in' && inv.kids > 0) ? ` +${inv.kids} kid${inv.kids > 1 ? 's' : ''}` : '';
       html += `<div class="attendee-row">
         <span><span class="status-dot ${dotClass}"></span>${esc(inv.name)}</span>
-        <span class="text-xs text-muted">${statusLabel}</span>
+        <span class="text-xs text-muted">${statusLabel}${kidsLabel}</span>
       </div>`;
     });
     html += `</div></details>`;
@@ -707,7 +814,26 @@ async function rsvp(eventId, status) {
   if (idx === -1) return;
 
   // Toggle: if already this status, go back to pending
-  invitees[idx].status = invitees[idx].status === status ? 'pending' : status;
+  if (invitees[idx].status === status) {
+    invitees[idx].status = 'pending';
+    invitees[idx].kids = 0;
+  } else {
+    invitees[idx].status = status;
+    if (status === 'out') invitees[idx].kids = 0;
+  }
+  await evtRef.update({ invitees });
+}
+
+async function updateKids(eventId, delta) {
+  const evtRef = db.collection('trips').doc(state.tripCode).collection('events').doc(eventId);
+  const doc = await evtRef.get();
+  const data = doc.data();
+  const invitees = data.invitees || [];
+  const idx = invitees.findIndex(i => i.memberId === state.userId);
+  if (idx === -1) return;
+
+  const current = invitees[idx].kids || 0;
+  invitees[idx].kids = Math.max(0, current + delta);
   await evtRef.update({ invitees });
 }
 
