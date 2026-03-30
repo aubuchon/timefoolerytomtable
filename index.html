@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TimeFooleryTomTable — Whistler 2026</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(180deg, #0b1d3a 0%, #1a3a5c 40%, #e8f4f8 100%);
+      min-height: 100vh;
+      color: #1a1a2e;
+      overflow-x: hidden;
+    }
+
+    /* — Snowfall — */
+    .snowflakes { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: hidden; }
+    .snowflake {
+      position: absolute; top: -20px; color: #fff; font-size: 1.2rem; opacity: 0.7;
+      animation: fall linear infinite;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-20px) rotate(0deg); }
+      100% { transform: translateY(105vh) rotate(360deg); }
+    }
+
+    /* — Header — */
+    .hero {
+      position: relative; z-index: 1;
+      text-align: center; padding: 60px 20px 40px;
+      color: #fff;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 3.5rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      line-height: 1.1;
+    }
+    .hero h1 span { color: #7dd3fc; }
+    .hero .subtitle {
+      font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+      margin-top: 10px;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+    .hero .tagline {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      opacity: 0.7;
+      font-style: italic;
+    }
+    .ski-emoji { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+
+    /* — Main content — */
+    .container {
+      position: relative; z-index: 1;
+      max-width: 700px; margin: 0 auto; padding: 0 16px 60px;
+    }
+
+    /* — Day Card — */
+    .day-card {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      transition: transform 0.2s;
+    }
+    .day-card:hover { transform: translateY(-2px); }
+
+    .day-header {
+      padding: 16px 20px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .day-header .day-icon { font-size: 1.4rem; }
+    .day-header .day-date { opacity: 0.85; font-weight: 400; font-size: 0.85rem; margin-left: auto; }
+
+    .monday .day-header    { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .tuesday .day-header   { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+    .wednesday .day-header { background: linear-gradient(135deg, #059669, #10b981); }
+    .thursday .day-header  { background: linear-gradient(135deg, #d97706, #f59e0b); }
+    .friday .day-header    { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+    .day-body { padding: 16px 20px; }
+
+    .event {
+      padding: 12px 0;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .event:last-child { border-bottom: none; }
+    .event-time {
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: #6b7280;
+      min-width: 60px;
+      padding-top: 2px;
+    }
+    .event-details h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      margin-bottom: 3px;
+    }
+    .event-details p {
+      font-size: 0.82rem;
+      color: #6b7280;
+      line-height: 1.4;
+    }
+    .event-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 50px;
+      margin-top: 4px;
+    }
+    .badge-adults { background: #ede9fe; color: #7c3aed; }
+    .badge-everyone { background: #dbeafe; color: #2563eb; }
+    .badge-optional { background: #fef3c7; color: #d97706; }
+    .badge-bday { background: #fce7f3; color: #db2777; }
+
+    /* — Footer — */
+    .footer {
+      text-align: center;
+      padding: 30px 20px;
+      color: #fff;
+      font-size: 0.75rem;
+      opacity: 0.6;
+      position: relative; z-index: 1;
+    }
+
+    /* — Fun extras — */
+    .mountain-divider {
+      text-align: center;
+      font-size: 1.5rem;
+      margin: 10px 0;
+      opacity: 0.3;
+      letter-spacing: 6px;
+    }
+
+    .pro-tip {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      color: #fff;
+      font-size: 0.85rem;
+      text-align: center;
+      position: relative; z-index: 1;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .pro-tip strong { color: #7dd3fc; }
+
+    .notes-section {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    .notes-section h2 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: #1a1a2e;
+    }
+    .notes-section ul {
+      list-style: none;
+      padding: 0;
+    }
+    .notes-section li {
+      font-size: 0.85rem;
+      padding: 6px 0;
+      border-bottom: 1px solid #f3f4f6;
+      color: #4b5563;
+    }
+    .notes-section li:last-child { border-bottom: none; }
+    .notes-section li::before { content: "⛷️ "; }
+  </style>
+</head>
+<body>
+
+  <!-- Snowfall -->
+  <div class="snowflakes" id="snowflakes"></div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <span class="ski-emoji">🎿</span>
+    <h1>Time<span>Foolery</span>TomTable</h1>
+    <p class="subtitle">Whistler 2026 — The Official* Itinerary</p>
+    <p class="tagline">*"Official" as determined by Tom Adams, Supreme Commander of Dinner Reservations</p>
+  </div>
+
+  <div class="container">
+
+    <div class="pro-tip">
+      <strong>Crew size:</strong> 32 strong. That's basically a small ski lodge. Tom booked all of this. Buy that man a drink. 🍺
+    </div>
+
+    <!-- MONDAY -->
+    <div class="day-card monday">
+      <div class="day-header">
+        <span class="day-icon">🔵</span>
+        Monday
+        <span class="day-date">March 30</span>
+      </div>
+      <div class="day-body">
+        <div class="event">
+          <div class="event-time">6:30 PM</div>
+          <div class="event-details">
+            <h3>Teppan Village Hibachi</h3>
+            <p>Dinner for 32. Show up sharp — they'll seat as you arrive but don't push it.</p>
+            <span class="event-badge badge-everyone">Everyone</span>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">After</div>
+          <div class="event-details">
+            <h3>Rocky Mountain Chocolate Factory</h3>
+            <p>Non-negotiable. Tom says "for the win" and we don't argue with Tom.</p>
+            <span class="event-badge badge-everyone">Everyone</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TUESDAY -->
+    <div class="day-card tuesday">
+      <div class="day-header">
+        <span class="day-icon">🟣</span>
+        Tuesday
+        <span class="day-date">March 31</span>
+      </div>
+      <div class="day-body">
+        <div class="event">
+          <div class="event-time">5:30 PM</div>
+          <div class="event-details">
+            <h3>Wild Blue — Adult Dinner</h3>
+            <p>Celebrating the Adams anniversary & Ashley's birthday! Dinner for 15.</p>
+            <span class="event-badge badge-adults">Adults Only</span>
+            <span class="event-badge badge-bday">🎂 Anniversary + Bday</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEDNESDAY -->
+    <div class="day-card wednesday">
+      <div class="day-header">
+        <span class="day-icon">🟢</span>
+        Wednesday
+        <span class="day-date">April 1</span>
+      </div>
+      <div class="day-body">
+        <div class="event">
+          <div class="event-time">1:00 PM</div>
+          <div class="event-details">
+            <h3>Christine's on Blackcomb — Adult Lunch</h3>
+            <p>Lunch for 15 celebrating Sarah's birthday. On-mountain dining doesn't get better than this.</p>
+            <span class="event-badge badge-adults">Adults Only</span>
+            <span class="event-badge badge-bday">🎂 Sarah's Bday</span>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">Evening</div>
+          <div class="event-details">
+            <h3>Sushi Village — Dinner with Kids</h3>
+            <p>Dinner for 28. No Sprague fam this one.</p>
+            <span class="event-badge badge-everyone">Everyone (minus Spragues)</span>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">After</div>
+          <div class="event-details">
+            <h3>Vallea Lumina Forest Light Walk</h3>
+            <p>Magical nighttime forest experience with kids. Tickets still TBD — speak up if interested!</p>
+            <span class="event-badge badge-optional">Optional — Need Tickets</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- THURSDAY -->
+    <div class="day-card thursday">
+      <div class="day-header">
+        <span class="day-icon">🟡</span>
+        Thursday
+        <span class="day-date">April 2</span>
+      </div>
+      <div class="day-body">
+        <div class="event">
+          <div class="event-time">3:30 PM</div>
+          <div class="event-details">
+            <h3>Scandinave Spa — Hot/Cold/Sauna</h3>
+            <p>Arrive at 3:30 for the hot/cold bath & sauna experience. Tom says "it's amazing!" and we trust Tom.</p>
+            <span class="event-badge badge-adults">Adults</span>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">5:15 PM</div>
+          <div class="event-details">
+            <h3>Scandinave Spa — Massages</h3>
+            <p>Massages booked for 5:15. You've earned it after three days of skiing.</p>
+            <span class="event-badge badge-adults">Adults</span>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">7:30 PM</div>
+          <div class="event-details">
+            <h3>Bearfoot Bistro — Adult Dinner</h3>
+            <p>No Jones' this evening. Fancy vibes.</p>
+            <span class="event-badge badge-adults">Adults (No Jones')</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FRIDAY -->
+    <div class="day-card friday">
+      <div class="day-header">
+        <span class="day-icon">🔴</span>
+        Friday
+        <span class="day-date">April 3</span>
+      </div>
+      <div class="day-body">
+        <div class="event">
+          <div class="event-time">TBD</div>
+          <div class="event-details">
+            <h3>Snowmobiling Adventure + Dinner</h3>
+            <p>No Jones'. Belle — Tom wants to discuss if your team is interested. Hit him up.</p>
+            <span class="event-badge badge-optional">Details TBD</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mountain-divider">▲ ▲ ▲ ▲ ▲</div>
+
+    <!-- Notes -->
+    <div class="notes-section">
+      <h2>Need to Know</h2>
+      <ul>
+        <li>Let Tom know ASAP if you can't make a reservation so he can adjust headcount</li>
+        <li>Vallea Lumina tickets still needed — DM Tom if you want in</li>
+        <li>Belle's crew: talk to Tom about Friday snowmobiling</li>
+        <li>Rocky Mountain Chocolate Factory is apparently mandatory. Don't test Tom on this.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    TimeFooleryTomTable™ — Not affiliated with Whistler Blackcomb, Tom Adams Enterprises, or any responsible adult.<br>
+    Built with love, sarcasm, and an unreasonable number of dinner reservations.<br>
+    © 2026 The Whistler Crew
+  </div>
+
+  <script>
+    // Generate snowflakes
+    const container = document.getElementById('snowflakes');
+    const flakes = ['❄', '❅', '❆', '✦', '•'];
+    for (let i = 0; i < 40; i++) {
+      const el = document.createElement('span');
+      el.className = 'snowflake';
+      el.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+      el.style.left = Math.random() * 100 + '%';
+      el.style.animationDuration = (4 + Math.random() * 6) + 's';
+      el.style.animationDelay = Math.random() * 8 + 's';
+      el.style.fontSize = (0.6 + Math.random() * 1) + 'rem';
+      el.style.opacity = 0.3 + Math.random() * 0.5;
+      container.appendChild(el);
+    }
+  </script>
+
+</body>
+</html>
